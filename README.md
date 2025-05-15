@@ -53,7 +53,6 @@ SECRET_ACCESS_KEY=password
     ├── main.py
     ├── model_zoo
     │   └── models.py
-    ├── requirements.txt
     └── utils
         ├── stac_client.py
         ├── torch.py
