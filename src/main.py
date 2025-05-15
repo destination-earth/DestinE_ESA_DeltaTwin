@@ -16,7 +16,8 @@ from model_zoo.models import define_model
 from utils.torch import load_model_weights
 
 
-def initialize_env():
+def initialize_env() -> dict:
+    """Load environment variables."""
     load_dotenv()
     return {
         "access_key_id": os.environ.get("ACCESS_KEY_ID"),
@@ -24,7 +25,8 @@ def initialize_env():
     }
 
 
-def connect_to_s3(endpoint_url, access_key_id, secret_access_key):
+def connect_to_s3(endpoint_url: str, access_key_id: str, secret_access_key: str) -> tuple:
+    """Connect to S3 storage."""
     connector = S3Connector(
         endpoint_url=endpoint_url,
         access_key_id=access_key_id,
@@ -34,7 +36,8 @@ def connect_to_s3(endpoint_url, access_key_id, secret_access_key):
     return connector.get_s3_resource(), connector.get_s3_client()
 
 
-def fetch_random_item(catalog, bbox, start_date, end_date, max_cloud_cover):
+def fetch_random_item(catalog, bbox: list, start_date: str, end_date: str, max_cloud_cover: int):
+    """Fetch a random item from the STAC catalog."""
     items = catalog.search(
         collections=['sentinel-2-l1c'],
         bbox=bbox,
@@ -45,7 +48,8 @@ def fetch_random_item(catalog, bbox, start_date, end_date, max_cloud_cover):
     return random.choice(items)
 
 
-def load_bands_from_s3(s3_client, bucket_name, item, bands, resize_shape=(1830, 1830)):
+def load_bands_from_s3(s3_client, bucket_name: str, item, bands: list, resize_shape: tuple = (1830, 1830)) -> np.ndarray:
+    """Load bands from S3 storage."""
     band_data = []
     for band_name in bands:
         product_url = extract_s3_path_from_url(item.assets[band_name].href)
@@ -55,7 +59,8 @@ def load_bands_from_s3(s3_client, bucket_name, item, bands, resize_shape=(1830, 
     return np.dstack(band_data)
 
 
-def normalize(data_array):
+def normalize(data_array: np.ndarray) -> tuple:
+    """Normalize the data array."""
     normalized_data, valid_masks = [], []
     for i in range(data_array.shape[2]):
         band = data_array[:, :, i]
@@ -69,7 +74,8 @@ def normalize(data_array):
     return np.dstack(normalized_data), np.dstack(valid_masks)
 
 
-def preprocess(raw_data, resize, device):
+def preprocess(raw_data: np.ndarray, resize: int, device: torch.device) -> tuple:
+    """Preprocess the raw data."""
     x_data, valid_mask = normalize(raw_data)
     x_data = cv2.resize(x_data, (resize, resize), interpolation=cv2.INTER_AREA)
     valid_mask = cv2.resize(valid_mask.astype(np.uint8), (resize, resize), interpolation=cv2.INTER_NEAREST).astype(bool)
@@ -77,7 +83,8 @@ def preprocess(raw_data, resize, device):
     return x_tensor, valid_mask
 
 
-def postprocess(x_tensor, pred_tensor, valid_mask):
+def postprocess(x_tensor: torch.Tensor, pred_tensor: np.ndarray, valid_mask: np.ndarray) -> tuple:
+    """Postprocess the prediction."""
     x_np = x_tensor.cpu().numpy()[0].transpose(1, 2, 0)
     pred_np = pred_tensor
     x_np[~valid_mask] = 0.0
@@ -85,7 +92,8 @@ def postprocess(x_tensor, pred_tensor, valid_mask):
     return x_np, pred_np
 
 
-def load_model(model_cfg, weights_path, device):
+def load_model(model_cfg: dict, weights_path: str, device: torch.device) -> torch.nn.Module:
+    """Load the model."""
     model = define_model(
         name=model_cfg["model_name"],
         encoder_name=model_cfg["encoder_name"],
@@ -97,15 +105,16 @@ def load_model(model_cfg, weights_path, device):
     return model.to(device)
 
 
-def predict(model, x_tensor):
+def predict(model: torch.nn.Module, x_tensor: torch.Tensor) -> np.ndarray:
+    """Make a prediction."""
     model.eval()
     with torch.no_grad():
         pred = model(x_tensor)
     return pred.cpu().numpy()[0].transpose(1, 2, 0)
 
 
-def visualize_results(x_np, pred_np, bands, cmap,  output_path="output"):
-
+def visualize_results(x_np: np.ndarray, pred_np: np.ndarray, bands: list, cmap: str, output_path: str = "output") -> None:
+    """Visualize the results."""
     for idx, band in enumerate(bands):
         fig, axs = plt.subplots(1, 2, figsize=(20, 6))
         axs[0].imshow(x_np[:, :, idx], cmap=cmap)
@@ -120,7 +129,7 @@ def visualize_results(x_np, pred_np, bands, cmap,  output_path="output"):
         plt.close(fig)
 
 
-def main():
+def main() -> None:
     # Load environment and configs
     env = initialize_env()
     dir_path = os.getcwd()
@@ -157,8 +166,7 @@ def main():
     x_np, pred_np = postprocess(x_tensor=x_tensor, pred_tensor=pred_np, valid_mask=valid_mask)
 
     # Visualization
-    visualize_results(x_np=x_np, pred_np=pred_np, bands=bands,
-                      cmap="Grays_r", output_path="inference_result")
+    visualize_results(x_np=x_np, pred_np=pred_np, bands=bands, cmap="Grays_r", output_path="inference_result")
 
 
 if __name__ == "__main__":
