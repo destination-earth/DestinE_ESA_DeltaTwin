@@ -1,7 +1,6 @@
 import yaml
 from loguru import logger
 from urllib.parse import urlparse
-import pandas as pd
 import os
 
 

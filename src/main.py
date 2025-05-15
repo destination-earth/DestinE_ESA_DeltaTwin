@@ -18,6 +18,7 @@ from model_zoo.models import define_model
 from utils.torch import load_model_weights
 warnings.filterwarnings('ignore')
 
+
 def initialize_env() -> dict:
     """Load environment variables."""
     try:
@@ -108,7 +109,7 @@ def preprocess(raw_data: np.ndarray, resize: int, device: torch.device) -> tuple
         x_data, valid_mask = normalize(raw_data)
         x_data = cv2.resize(x_data, (resize, resize), interpolation=cv2.INTER_AREA)
         valid_mask = cv2.resize(valid_mask.astype(np.uint8), (resize, resize), interpolation=cv2.INTER_NEAREST).astype(bool)
-        x_tensor = torch.from_numpy(x_data).float().permute(2, 0, 1).unsqueeze(0).to(device)
+        x_tensor = torch.from_numpy(x_data).float().permute(2, 0, 1).unsqueeze(0).to(device) # [B , C , W, H]
         logger.success("Preprocess raw data successull")
         return x_tensor, valid_mask
     except Exception as e:
@@ -161,7 +162,7 @@ def predict(model: torch.nn.Module, x_tensor: torch.Tensor) -> np.ndarray:
         return None
 
 
-def visualize_results(x_np: np.ndarray, pred_np: np.ndarray, bands: list, cmap: str, output_path: str = "output") -> None:
+def visualize_results(x_np: np.ndarray, pred_np: np.ndarray, bands: list, cmap: str, output_dir) -> None:
     """Visualize the results."""
     try:
         for idx, band in enumerate(bands):
@@ -174,7 +175,7 @@ def visualize_results(x_np: np.ndarray, pred_np: np.ndarray, bands: list, cmap: 
             axs[1].set_title(f"Prediction L2A - Band: {band}", fontsize=14)
             axs[1].axis('off')
 
-            fig.savefig(f"{output_path}_{band}.png", dpi=300, bbox_inches='tight')
+            fig.savefig(f"{output_dir}/{band}.png", dpi=300, bbox_inches='tight')
             plt.close(fig)
         logger.success("Visualization generated")
     except Exception as e:
@@ -224,7 +225,7 @@ def main() -> None:
     x_np, pred_np = postprocess(x_tensor=x_tensor, pred_tensor=pred_np, valid_mask=valid_mask)
 
     # Visualization
-    visualize_results(x_np=x_np, pred_np=pred_np, bands=bands, cmap="Grays_r", output_path=dir_path)
+    visualize_results(x_np=x_np, pred_np=pred_np, bands=bands, cmap="Grays_r", output_dir=dir_path)
     logger.success("Workflow completed")
 
 
