@@ -3,15 +3,24 @@ from urllib.parse import urlparse
 import pandas as pd
 import os
 
-def load_config(config_path="cfg/config.yaml"):
+def load_config(config_path: str = "cfg/config.yaml") -> dict:
+    """
+    Load configuration from a YAML file.
+
+    Args:
+        config_path (str): The path to the configuration YAML file.
+
+    Returns:
+        dict: The loaded configuration dictionary.
+    """
     with open(config_path, "r") as file:
         config = yaml.safe_load(file)
     return config
 
 
-def extract_s3_path_from_url(url):
+def extract_s3_path_from_url(url: str) -> str:
     """
-    Extracts the S3 object path from an S3 URL or URI.
+    Extract the S3 object path from an S3 URL or URI.
 
     This function parses S3 URLs/URIs and returns just the object path portion,
     removing the protocol (s3://), bucket name, and any leading slashes.
@@ -21,25 +30,23 @@ def extract_s3_path_from_url(url):
 
     Returns:
         str: The S3 object path (without protocol, bucket name and leading slashes)
+
+    Raises:
+        ValueError: If the provided URL is not an S3 URL.
     """
-    # If it's not an S3 URI, return it unchanged
     if not url.startswith('s3://'):
         return url
 
-    # Parse the S3 URI
     parsed_url = urlparse(url)
 
-    # Ensure this is an S3 URL
     if parsed_url.scheme != 's3':
         raise ValueError(f"URL {url} is not an S3 URL")
 
-    # Extract the path without leading slashes
     object_path = parsed_url.path.lstrip('/')
-
     return object_path
 
 
-def prepare_paths(path_dir):
+def prepare_paths(path_dir: str) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
     Prepare paths for input and output datasets from CSV files.
 
@@ -47,10 +54,10 @@ def prepare_paths(path_dir):
         path_dir (str): Directory containing input and target CSV files.
 
     Returns:
-        DataFrame, DataFrame: Two DataFrames for input and output datasets.
+        tuple[pd.DataFrame, pd.DataFrame]: Two DataFrames for input and output datasets.
     """
-    df_input = pd.read_csv(f"{path_dir}/input.csv")
-    df_output = pd.read_csv(f"{path_dir}/target.csv")
+    df_input = pd.read_csv(os.path.join(path_dir, "input.csv"))
+    df_output = pd.read_csv(os.path.join(path_dir, "target.csv"))
 
     df_input["path"] = df_input["Name"].apply(
         lambda x: os.path.join(path_dir, "input", os.path.basename(x).replace(".SAFE", ""))
@@ -62,7 +69,15 @@ def prepare_paths(path_dir):
     return df_input, df_output
 
 
-def remove_last_segment_rsplit(sentinel_id):
-    # Split from the right side, max 1 split
+def remove_last_segment_rsplit(sentinel_id: str) -> str:
+    """
+    Remove the last segment from a Sentinel ID by splitting at the last underscore.
+
+    Args:
+        sentinel_id (str): The Sentinel ID to process.
+
+    Returns:
+        str: The Sentinel ID without the last segment.
+    """
     parts = sentinel_id.rsplit('_', 1)
     return parts[0]

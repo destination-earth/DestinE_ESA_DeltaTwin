@@ -1,108 +1,83 @@
+import yaml
+from urllib.parse import urlparse
+import pandas as pd
 import os
-import torch
-import random
-import numpy as np
-import re
-import copy
-from loguru import logger
 
-def seed_everything(seed):
+def load_config(config_path: str = "cfg/config.yaml") -> dict:
     """
-    Seeds basic parameters for reproductibility of results.
+    Load configuration from a YAML file.
 
     Args:
-        seed (int): Number of the seed.
-    """
-
-    try:
-        random.seed(seed)
-        os.environ["PYTHONHASHSEED"] = str(seed)
-        np.random.seed(seed)
-        torch.manual_seed(seed)
-        torch.cuda.manual_seed(seed)
-        torch.backends.cudnn.deterministic = True
-        torch.backends.cudnn.benchmark = False
-        logger.info("seed everything successful")
-
-    except Exception as e:
-        logger.error(f"Failed to seed everything: {e}")
-        raise
-
-
-
-def count_parameters(model, all=False):
-    """
-    Count the parameters of a model.
-
-    Args:
-        model (torch model): Model to count the parameters of.
-        all (bool, optional):  Whether to count not trainable parameters. Defaults to False.
+        config_path (str): The path to the configuration YAML file.
 
     Returns:
-        int: Number of parameters.
+        dict: The loaded configuration dictionary.
     """
-
-    if all:
-        return sum(p.numel() for p in model.parameters())
-    else:
-        return sum(p.numel() for p in model.parameters() if p.requires_grad)
+    with open(config_path, "r") as file:
+        config = yaml.safe_load(file)
+    return config
 
 
-def load_model_weights(model, filename, verbose=1, cp_folder="", strict=True):
+def extract_s3_path_from_url(url: str) -> str:
     """
-    Loads the weights of a PyTorch model. The exception handles cpu/gpu incompatibilities.
+    Extract the S3 object path from an S3 URL or URI.
+
+    This function parses S3 URLs/URIs and returns just the object path portion,
+    removing the protocol (s3://), bucket name, and any leading slashes.
 
     Args:
-        model (torch model): Model to load the weights to.
-        filename (str): Name of the checkpoint.
-        verbose (int, optional): Whether to display infos. Defaults to 1.
-        cp_folder (str, optional): Folder to load from. Defaults to "".
-        strict (str, optional): Whether to use strict weight loading. Defaults to True.
+        url (str): The full S3 URI (e.g., 's3://eodata/path/to/file.jp2')
 
     Returns:
-        torch model: Model with loaded weights.
+        str: The S3 object path (without protocol, bucket name and leading slashes)
+
+    Raises:
+        ValueError: If the provided URL is not an S3 URL.
     """
-    state_dict = torch.load(os.path.join(cp_folder, filename), map_location="cpu")
+    if not url.startswith('s3://'):
+        return url
 
-    try:
-        try:
-            model.load_state_dict(state_dict, strict=strict)
-        except BaseException:
-            state_dict_ = {}
-            for k, v in state_dict.items():
-                state_dict_[re.sub("module.", "", k)] = v
-            model.load_state_dict(state_dict_, strict=strict)
+    parsed_url = urlparse(url)
 
-    except BaseException:
-        try:  # REMOVE CLASSIFIER
-            state_dict_ = copy.deepcopy(state_dict)
-            try:
-                del (
-                    state_dict_["encoder.classifier.weight"],
-                    state_dict_["encoder.classifier.bias"],
-                )
-            except KeyError:
-                del (
-                    state_dict_["encoder.head.fc.weight"],
-                    state_dict_["encoder.head.fc.bias"],
-                )
-            model.load_state_dict(state_dict_, strict=strict)
-        except BaseException:  # REMOVE LOGITS
-            try:
-                for k in ["logits.weight", "logits.bias"]:
-                    try:
-                        del state_dict[k]
-                    except KeyError:
-                        pass
-                model.load_state_dict(state_dict, strict=strict)
-            except BaseException:
-                del state_dict["encoder.conv_stem.weight"]
-                model.load_state_dict(state_dict, strict=strict)
+    if parsed_url.scheme != 's3':
+        raise ValueError(f"URL {url} is not an S3 URL")
 
-    if verbose:
-        logger.info(
-            f"\n -> Loading encoder weights from {os.path.join(cp_folder,filename)}\n"
-        )
+    object_path = parsed_url.path.lstrip('/')
+    return object_path
 
-    return model
 
+def prepare_paths(path_dir: str) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """
+    Prepare paths for input and output datasets from CSV files.
+
+    Args:
+        path_dir (str): Directory containing input and target CSV files.
+
+    Returns:
+        tuple[pd.DataFrame, pd.DataFrame]: Two DataFrames for input and output datasets.
+    """
+    df_input = pd.read_csv(os.path.join(path_dir, "input.csv"))
+    df_output = pd.read_csv(os.path.join(path_dir, "target.csv"))
+
+    df_input["path"] = df_input["Name"].apply(
+        lambda x: os.path.join(path_dir, "input", os.path.basename(x).replace(".SAFE", ""))
+    )
+    df_output["path"] = df_output["Name"].apply(
+        lambda x: os.path.join(path_dir, "target", os.path.basename(x).replace(".SAFE", ""))
+    )
+
+    return df_input, df_output
+
+
+def remove_last_segment_rsplit(sentinel_id: str) -> str:
+    """
+    Remove the last segment from a Sentinel ID by splitting at the last underscore.
+
+    Args:
+        sentinel_id (str): The Sentinel ID to process.
+
+    Returns:
+        str: The Sentinel ID without the last segment.
+    """
+    parts = sentinel_id.rsplit('_', 1)
+    return parts[0]

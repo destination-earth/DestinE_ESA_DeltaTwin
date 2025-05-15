@@ -1,80 +1,64 @@
-import io
-from datetime import datetime, timedelta
-
-import random
-import requests
-from pystac_client import Client
+import yaml
+from urllib.parse import urlparse
+import pandas as pd
 import os
-import re
 
-from auth.auth import get_direct_access_token
-
-
-def extract_url_after_filename(url):
-    """Extract the filename from the URL."""
-    match = re.search(r'\?filename=(.*)', url)
-    return match.group(1) if match else None
-
-
-def get_product_content(s3_client, bucket_name, object_url):
+def load_config(config_path: str = "cfg/config.yaml") -> dict:
     """
-    Download the content of a product from S3 bucket.
+    Load configuration from a YAML file.
 
     Args:
-        s3_client: boto3 S3 client object
-        bucket_name (str): Name of the S3 bucket
-        object_url (str): Path to the object within the bucket
+        config_path (str): The path to the configuration YAML file.
 
     Returns:
-        bytes: Content of the downloaded file
+        dict: The loaded configuration dictionary.
     """
-    print(f"Downloading {object_url}")
-
     try:
-        # Download the file from S3
-        response = s3_client.get_object(Bucket=bucket_name, Key=object_url)
-        content = response['Body'].read()
-        print(f"Successfully downloaded {object_url}")
-    except Exception as e:
-        print(f"Error downloading file: {str(e)}")
-        raise
-
-    return content
+        with open(config_path, "r") as file:
+            config = yaml.safe_load(file)
+        return config
+    except FileNotFoundError:
+        raise ValueError(f"Configuration file not found at {config_path}")
+    except yaml.YAMLError as e:
+        raise ValueError(f"Failed to parse YAML configuration: {e}")
 
 
-def get_product(s3_resource, bucket_name, object_url, output_path):
+def extract_s3_path_from_url(url: str) -> str:
     """
-    Download a product from S3 bucket and create output directory if it doesn't exist.
+    Extract the S3 object path from an S3 URL or URI.
+
+    This function parses S3 URLs/URIs and returns just the object path portion,
+    removing the protocol (s3://), bucket name, and any leading slashes.
 
     Args:
-        s3_resource: boto3 S3 resource object
-        bucket_name (str): Name of the S3 bucket
-        object_url (str): Path to the object within the bucket
-        output_path (str): Local directory to save the file
+        url (str): The full S3 URI (e.g., 's3://eodata/path/to/file.jp2')
 
     Returns:
-        str: Path to the downloaded file
+        str: The S3 object path (without protocol, bucket name and leading slashes)
+
+    Raises:
+        ValueError: If the provided URL is not an S3 URL.
     """
-    # Create output directory if it doesn't exist
-    os.makedirs(output_path, exist_ok=True)
+    if not url.startswith('s3://'):
+        return url
 
-    # Extract filename from the object URL
-    _, filename = os.path.split(object_url)
+    parsed_url = urlparse(url)
 
-    # Full path where the file will be saved
-    local_file_path = os.path.join(output_path, filename)
+    if parsed_url.scheme != 's3':
+        raise ValueError(f"URL {url} is not an S3 URL")
 
-    print(f"Downloading {object_url} to {local_file_path}...")
-
-    try:
-        # Download the file from S3
-        s3_resource.Bucket(bucket_name).download_file(object_url, local_file_path)
-        print(f"Successfully downloaded to {local_file_path}")
-    except Exception as e:
-        print(f"Error downloading file: {str(e)}")
-        raise
-
-    return local_file_path
+    return parsed_url.path.lstrip('/')
 
 
 
+def remove_last_segment_rsplit(sentinel_id: str) -> str:
+    """
+    Remove the last segment from a Sentinel ID by splitting at the last underscore.
+
+    Args:
+        sentinel_id (str): The Sentinel ID to process.
+
+    Returns:
+        str: The Sentinel ID without the last segment.
+    """
+    return sentinel_id.rsplit('_', 1)[0]
