@@ -24,7 +24,7 @@ conda activate ai_processor
 pip install -r requirements.txt
 ```
 
-3. Set up your credentials by creating a `.env` file in the root directory with the following content:
+3. Set up your CDSE credentials by creating a `.env` file in the root directory with the following content:
 
 ```bash
 touch .env
