@@ -43,32 +43,16 @@ SECRET_ACCESS_KEY=password
 ├── LICENSE
 ├── README.md
 ├── requirements.txt
-├── sample-rotation
-│   ├── README.md
-│   ├── manifest.json
-│   ├── models
-│   │   └── rotation
-│   │       ├── Dockerfile
-│   │       └── rotate.py
-│   └── workflow.yml
 └── src
     ├── auth
-    │   ├── __pycache__
-    │   │   └── auth.cpython-312.pyc
     │   └── auth.py
     ├── cfg
     │   ├── config.yaml
     │   └── query_config.yaml
     ├── main.py
     ├── model_zoo
-    │   ├── __pycache__
-    │   │   └── models.cpython-312.pyc
     │   └── models.py
     ├── utils
-    │   ├── __pycache__
-    │   │   ├── stac_client.cpython-312.pyc
-    │   │   ├── torch.cpython-312.pyc
-    │   │   └── utils.cpython-312.pyc
     │   ├── stac_client.py
     │   ├── torch.py
     │   └── utils.py

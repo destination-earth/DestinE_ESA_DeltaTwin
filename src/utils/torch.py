@@ -97,8 +97,7 @@ def load_model_weights(
                 model.load_state_dict(state_dict, strict=strict)
 
     if verbose:
-        logger.info(
-            f"\n -> Loading encoder weights from {os.path.join(cp_folder, filename)}\n"
+        logger.info("Loading encoder weights from {os.path.join(cp_folder, filename)}"
         )
 
     return model

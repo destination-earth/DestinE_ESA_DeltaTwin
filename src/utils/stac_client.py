@@ -1,5 +1,6 @@
 import io
 from datetime import datetime, timedelta
+from loguru import logger
 import random
 import requests
 from pystac_client import Client
@@ -20,14 +21,14 @@ def get_product_content(s3_client, bucket_name: str, object_url: str) -> bytes:
     Raises:
         Exception: If an error occurs during the download process.
     """
-    print(f"Downloading {object_url}")
+    logger.info(f"Downloading {object_url}")
 
     try:
         response = s3_client.get_object(Bucket=bucket_name, Key=object_url)
         content = response['Body'].read()
-        print(f"Successfully downloaded {object_url}")
+        logger.success(f"Successfully downloaded {object_url}")
     except Exception as e:
-        print(f"Error downloading file: {str(e)}")
+        logger.error(f"Error downloading file: {str(e)}")
         raise
 
     return content

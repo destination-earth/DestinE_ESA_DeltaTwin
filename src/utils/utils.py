@@ -1,7 +1,9 @@
 import yaml
+from loguru import logger
 from urllib.parse import urlparse
 import pandas as pd
 import os
+
 
 def load_config(config_path: str = "cfg/config.yaml") -> dict:
     """
@@ -13,9 +15,20 @@ def load_config(config_path: str = "cfg/config.yaml") -> dict:
     Returns:
         dict: The loaded configuration dictionary.
     """
-    with open(config_path, "r") as file:
-        config = yaml.safe_load(file)
-    return config
+    try:
+        with open(config_path, "r") as file:
+            config = yaml.safe_load(file)
+        logger.success(f"Loaded configuration from {config_path}")
+        return config
+    except FileNotFoundError:
+        logger.error(f"Configuration file {config_path} not found")
+        return {}
+    except yaml.YAMLError as e:
+        logger.error(f"Failed to parse YAML configuration: {e}")
+        return {}
+    except Exception as e:
+        logger.error(f"Failed to load configuration: {e}")
+        return {}
 
 
 def extract_s3_path_from_url(url: str) -> str:
@@ -44,29 +57,6 @@ def extract_s3_path_from_url(url: str) -> str:
 
     object_path = parsed_url.path.lstrip('/')
     return object_path
-
-
-def prepare_paths(path_dir: str) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """
-    Prepare paths for input and output datasets from CSV files.
-
-    Args:
-        path_dir (str): Directory containing input and target CSV files.
-
-    Returns:
-        tuple[pd.DataFrame, pd.DataFrame]: Two DataFrames for input and output datasets.
-    """
-    df_input = pd.read_csv(os.path.join(path_dir, "input.csv"))
-    df_output = pd.read_csv(os.path.join(path_dir, "target.csv"))
-
-    df_input["path"] = df_input["Name"].apply(
-        lambda x: os.path.join(path_dir, "input", os.path.basename(x).replace(".SAFE", ""))
-    )
-    df_output["path"] = df_output["Name"].apply(
-        lambda x: os.path.join(path_dir, "target", os.path.basename(x).replace(".SAFE", ""))
-    )
-
-    return df_input, df_output
 
 
 def remove_last_segment_rsplit(sentinel_id: str) -> str:
