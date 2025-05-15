@@ -39,22 +39,39 @@ SECRET_ACCESS_KEY=password
 ## Repository structure
 
 ```Bash
+.
 ├── LICENSE
 ├── README.md
 ├── requirements.txt
+├── sample-rotation
+│   ├── README.md
+│   ├── manifest.json
+│   ├── models
+│   │   └── rotation
+│   │       ├── Dockerfile
+│   │       └── rotate.py
+│   └── workflow.yml
 └── src
     ├── auth
+    │   ├── __pycache__
+    │   │   └── auth.cpython-312.pyc
     │   └── auth.py
     ├── cfg
-    │   ├── checkpoints
-    │   │   └── AiSen2Core_EfficientNet_b2.pth
     │   ├── config.yaml
     │   └── query_config.yaml
     ├── main.py
     ├── model_zoo
+    │   ├── __pycache__
+    │   │   └── models.cpython-312.pyc
     │   └── models.py
-    └── utils
-        ├── stac_client.py
-        ├── torch.py
-        └── utils.py
+    ├── utils
+    │   ├── __pycache__
+    │   │   ├── stac_client.cpython-312.pyc
+    │   │   ├── torch.cpython-312.pyc
+    │   │   └── utils.cpython-312.pyc
+    │   ├── stac_client.py
+    │   ├── torch.py
+    │   └── utils.py
+    └── weight
+        └── AiSen2Core_EfficientNet_b2.pth
 ```

@@ -136,7 +136,7 @@ def main() -> None:
 
     model_cfg = load_config(f"{dir_path}/cfg/config.yaml")
     query_cfg = load_config(f"{dir_path}/cfg/query_config.yaml")
-    model_path = f"/home/ubuntu/project/DestinE_ESA_DeltaTwin/src/cfg/checkpoints/AiSen2Core_EfficientNet_b2.pth"
+    model_path = f"{dir_path}/weight/AiSen2Core_EfficientNet_b2.pth"
 
     # Setup
     endpoint_url = query_cfg["endpoint_url"]
