@@ -1,61 +1,130 @@
 # DestinE_ESA_DeltaTwin
-DestinE DeltaTwin workflow creation for Sentinel2 L2A product generation with AI
 
+DestinE DeltaTwin workflow creation/run/publish for Sentinel2 L2A product generation with AI
 
-## Installation
+## Table of Contents
 
-1. Clone the repository:
+1. [Run the Processor Locally](#1---run-the-processor-locally)
+   1. [Installation](#installation)
+   2. [Running the Processor](#running-the-processor)
+2. [Run the Processor via Delta Twin and Publish](#2---run-the-processor-via-delta-twin-and-publish)
+   1. [Set up CDSE Credentials](#set-up-cdse-credentials)
+   2. [Test the Delta Twin Locally](#test-the-delta-twin-locally)
+   3. [Publish the Delta Twin](#publish-the-delta-twin)
+3. [Output Example](#output-example)
+4. [Repository Structure](#repository-structure)
+
+## 1 - Run the Processor Locally
+
+### Installation
+
+To run the processor locally, follow these steps:
+
+1. **Clone the Repository**:
+
+   ```bash
+   git clone https://github.com/destination-earth/DestinE_ESA_DeltaTwin
+   cd DestinE_ESA_DeltaTwin
+   ```
+
+2. **Create and Activate a Conda Environment**:
+
+   ```bash
+   conda create -n ai_processor python==3.12.2
+   conda activate ai_processor
+   ```
+
+3. **Install the Required Dependencies**:
+
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+### Running the Processor
+
+To run the processor, execute the following command:
 
 ```bash
-git clone https://github.com/destination-earth/DestinE_ESA_DeltaTwin
-cd DestinE_ESA_DeltaTwin
+cd ai-sen2core-processor/models/src/
+python main.py your_cdse_key your_cdse_secret
 ```
 
-2. Create and activate a conda environment:
+## 2 - Run the Processor via Delta Twin and Publish
+
+### Set up CDSE Credentials
+
+To set up your CDSE credentials, edit the `ai-sen2core-processor/inputs_file.json` JSON file by adding your CDSE key and secret:
+
+```json
+{
+  "cdse_key": {
+    "type": "string",
+    "value": "your_cdse_key"
+  },
+  "cdse_secret": {
+    "type": "string",
+    "value": "your_cdse_secret"
+  }
+}
+```
+
+### Test the Delta Twin Locally
+
+To test the Delta Twin locally, run the following command:
 
 ```bash
-conda create -n ai_processor python==3.12.2
-conda activate ai_processor
+deltatwin run start_local -i inputs_file.json
 ```
 
-3. Install the required dependencies:
+### Publish the Delta Twin
+
+1. **Login to DeltaTwin**:
+
+   ```bash
+   deltatwin login
+   ```
+
+2. **Publish the Component**:
+
+   ```bash
+   deltatwin component publish -t AiSen2Core -v private 0.1
+   ```
+
+## Workflow Output Example
+
+Below is an example of the Delta Twin output. The L1C product download, preprocessed, ingested by the model to generate the L2A product from the same band. The worflow should output the following band:  B02, B03 and B04.
+
+![Image Alt Text](assets/L2A_B02.png)
+
+
+## Repository Structure
+
+The repository is structured as follows:
 
 ```bash
-pip install -r requirements.txt
-```
-
-3. Set up your CDSE credentials by creating a `.env` file in the root directory with the following content:
-
-```bash
-touch .env
-```
-then:
-
-```
-ACCESS_KEY_ID=username
-SECRET_ACCESS_KEY=password
-```
-
-## Repository structure
-
-```Bash
-.
 ├── LICENSE
 ├── README.md
-├── requirements.txt
-└── src
-    ├── auth
-    │   └── auth.py
-    ├── cfg
-    │   ├── config.yaml
-    │   └── query_config.yaml
-    ├── main.py
-    ├── model_zoo
-    │   └── models.py
-    ├── utils
-    │   ├── stac_client.py
-    │   ├── torch.py
-    │   └── utils.py
-    └── weight
-        └── AiSen2Core_EfficientNet_b2.pth
+├── ai-sen2core-processor
+│   ├── inputs_file.json
+│   ├── manifest.json
+│   ├── models
+│   │   └── src
+│   │       ├── auth
+│   │       │   └── auth.py
+│   │       ├── cfg
+│   │       │   ├── config.yaml
+│   │       │   └── query_config.yaml
+│   │       ├── main.py
+│   │       ├── model_zoo
+│   │       │   └── models.py
+│   │       ├── utils
+│   │       │   ├── stac_client.py
+│   │       │   ├── torch.py
+│   │       │   └── utils.py
+│   │       └── weight
+│   │           └── AiSen2Core_EfficientNet_b2.pth
+│   └── workflow.yml
+└── requirements.txt
 ```
+
+This structure includes the main directories and files necessary for the DestinE DeltaTwin workflow creation for Sentinel2 L2A product generation with AI.
