@@ -1,0 +1,47 @@
+# List of nodes in the workflow
+nodes:
+  - id: cdse_key
+    # ref must point to an existing path in manifest.json
+    # i.e. a specific resource, dependency, input, output, or model
+    ref: inputs.cdse_key
+  - id: cdse_secret
+    ref: inputs.cdse_secret  # (ex: resources.band_03, dependencies.band-extractor, inputs.name, outputs.roteted-image, models.band-compositor)
+  - id: inference
+    ref : models.ai-sen2core-processor
+  - id: output_b02
+    ref : outputs.L2A_B02
+  - id: output_b03
+    ref : outputs.L2A_B03
+  - id: output_b04
+    ref : outputs.L2A_B04
+
+# List of edges between nodes in the workflow
+edges:
+  - from:
+      id: cdse_key
+    to:
+      id: inference
+      port: cdse_key
+  - from:
+      id: cdse_secret
+    to:
+      id: inference
+      port: cdse_secret
+  - from: # the source node of the edge
+      id: inference # id of an existing node identifier from the list of the nodes above (⚠️ different from to.id)
+      # the specified port name corresponds to a variable in the source node
+      port: L2A_B02 # name of an output from the source node (ex: selectedBand, indexImage)
+    to: # the destination node of the edge
+      id: output_b02 # id of an existing node identifier from the list of the nodes above (⚠️ different from from.id)
+  - from: # the source node of the edge
+      id: inference # id of an existing node identifier from the list of the nodes above (⚠️ different from to.id)
+      # the specified port name corresponds to a variable in the source node
+      port: L2A_B03 # name of an output from the source node (ex: selectedBand, indexImage)
+    to: # the destination node of the edge
+      id: output_b03 # id of an existing node identifier from the list of the nodes above (⚠️ different from from.id)
+  - from: # the source node of the edge
+      id: inference # id of an existing node identifier from the list of the nodes above (⚠️ different from to.id)
+      # the specified port name corresponds to a variable in the source node
+      port: L2A_B04 # name of an output from the source node (ex: selectedBand, indexImage)
+    to: # the destination node of the edge
+      id: output_b04 # id of an existing node identifier from the list of the nodes above (⚠️ different from from.id)

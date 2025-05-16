@@ -1,0 +1,10 @@
+{
+    "cdse_key": {
+      "type": "string",
+      "value": "your_cdse_key"
+    },
+    "cdse_secret": {
+      "type": "string",
+      "value": "your_cdse_secret"
+    }
+  }
