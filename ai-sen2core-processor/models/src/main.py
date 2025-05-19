@@ -163,7 +163,7 @@ def predict(model: torch.nn.Module, x_tensor: torch.Tensor) -> np.ndarray:
         return None
 
 
-def visualize_results(x_np: np.ndarray, pred_np: np.ndarray, bands: list, cmap: str, output_dir) -> None:
+def plot_band(x_np: np.ndarray, pred_np: np.ndarray, bands: list, cmap: str, output_dir) -> None:
     """Visualize the results."""
     try:
         for idx, band in enumerate(bands):
@@ -189,7 +189,7 @@ def main() -> None:
     logger.info("Start workflow ...")
     # Load environment and configs
 
-    env = initialize_env(key_id=sys.argv[1], secret_key=sys.argv[2] )
+    env = initialize_env(key_id=sys.argv[1], secret_key=sys.argv[2])
     dir_path = os.getcwd()
 
     model_cfg = load_config(f"{dir_path}/cfg/config.yaml")
@@ -227,7 +227,7 @@ def main() -> None:
     x_np, pred_np = postprocess(x_tensor=x_tensor, pred_tensor=pred_np, valid_mask=valid_mask)
 
     # Visualization
-    visualize_results(x_np=x_np, pred_np=pred_np, bands=bands, cmap="Grays_r", output_dir=dir_path)
+    plot_band(x_np=x_np, pred_np=pred_np, bands=bands, cmap="Grays_r", output_dir=dir_path)
     logger.success("Workflow completed")
 
 
