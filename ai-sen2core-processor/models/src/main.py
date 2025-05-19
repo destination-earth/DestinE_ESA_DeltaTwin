@@ -122,9 +122,12 @@ def postprocess(x_tensor: torch.Tensor, pred_tensor: np.ndarray, valid_mask: np.
     """Postprocess the prediction."""
     try:
         x_np = x_tensor.cpu().numpy()[0].transpose(1, 2, 0)
-        pred_np = pred_tensor
         x_np[~valid_mask] = 0.0
+        pred_np = pred_tensor
         pred_np[~valid_mask] = 0.0
+        # Make sure all values are clipped to 0-1
+        x_np = np.clip(x_np, 0, 1)
+        pred_np = np.clip(pred_np, 0, 1)
         logger.success("Postprocess model output successull")
         return x_np, pred_np
     except Exception as e:
@@ -163,11 +166,11 @@ def predict(model: torch.nn.Module, x_tensor: torch.Tensor) -> np.ndarray:
         return None
 
 
-def plot_band(x_np: np.ndarray, pred_np: np.ndarray, bands: list, cmap: str, output_dir) -> None:
+def generate_plot_band(x_np: np.ndarray, pred_np: np.ndarray, bands: list, cmap: str, output_dir) -> None:
     """Visualize the results."""
     try:
         for idx, band in enumerate(bands):
-            fig, axs = plt.subplots(1, 2, figsize=(20, 6))
+            fig, axs = plt.subplots(1, 2, figsize=(20, 10))
             axs[0].imshow(x_np[:, :, idx], cmap=cmap)
             axs[0].set_title(f"Input L1C - Band: {band}", fontsize=14)
             axs[0].axis('off')
@@ -181,6 +184,63 @@ def plot_band(x_np: np.ndarray, pred_np: np.ndarray, bands: list, cmap: str, out
         logger.success("Visualization generated")
     except Exception as e:
         logger.error(f"Failed to generated visualization: {e}")
+
+
+def generate_tci_plot(x_np: np.ndarray, pred_np: np.ndarray, bands: list, output_dir: str) -> None:
+    """
+    Generate True Color Image (RGB composite) plots for both input and predicted data.
+
+    Args:
+        x_np: Input data array with shape [H, W, C]
+        pred_np: Predicted data array with shape [H, W, C]
+        bands: List of band names
+        output_dir: Directory to save the output images
+    """
+    try:
+        # Find indices for RGB bands (B04-Red, B03-Green, B02-Blue)
+        rgb_indices = []
+        for rgb_band in ['B04', 'B03', 'B02']:
+            if rgb_band in bands:
+                rgb_indices.append(bands.index(rgb_band))
+            else:
+                logger.error(f"Required band {rgb_band} not found in the available bands")
+                return
+
+        if len(rgb_indices) != 3:
+            logger.error("Could not find all required RGB bands")
+            return
+
+        # Extract RGB bands
+        rgb_x = x_np[:, :, rgb_indices].copy()  # Make a copy to avoid modifying the original data
+        rgb_pred = pred_np[:, :, rgb_indices].copy()
+
+
+        # Option 1: Simple multiplication by 255 (if data is well-distributed between 0-1)
+        # This is particularly good if your model outputs are already normalized well
+
+
+
+        # Create figure
+        fig, axs = plt.subplots(1, 2, figsize=(20, 10))
+
+        # Plot input TCI
+        axs[0].imshow(rgb_x)
+        axs[0].set_title("Input L1C - True Color (B02,B03,B04)", fontsize=16)
+        axs[0].axis('off')
+
+        # Plot predicted TCI
+        axs[1].imshow(rgb_pred)
+        axs[1].set_title("Predicted L2A - True Color (B02,B03,B04)", fontsize=16)
+        axs[1].axis('off')
+
+        # Save figure
+        fig.tight_layout()
+        fig.savefig(f"{output_dir}/TCI_composite.png", dpi=300, bbox_inches='tight')
+        plt.close(fig)
+
+        logger.success("TCI RGB composite visualization generated")
+    except Exception as e:
+        logger.error(f"Failed to generate TCI RGB composite: {e}")
 
 
 def main() -> None:
@@ -227,7 +287,9 @@ def main() -> None:
     x_np, pred_np = postprocess(x_tensor=x_tensor, pred_tensor=pred_np, valid_mask=valid_mask)
 
     # Visualization
-    plot_band(x_np=x_np, pred_np=pred_np, bands=bands, cmap="Grays_r", output_dir=dir_path)
+    generate_plot_band(x_np=x_np, pred_np=pred_np, bands=bands, cmap="Grays_r", output_dir=dir_path)
+    generate_tci_plot(x_np=x_np, pred_np=pred_np, bands=bands, output_dir=dir_path)
+
     logger.success("Workflow completed")
 
 
