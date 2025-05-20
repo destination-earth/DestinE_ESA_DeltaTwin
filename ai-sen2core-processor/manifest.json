@@ -37,6 +37,10 @@
         "L2A_B04": {
             "type": "Data",
             "description": "L2A B04"
+        },
+        "L2A_TCI": {
+            "type": "Data",
+            "description": "L2A TCI"
         }
     },
     "models": {
@@ -107,7 +111,6 @@
                     "cpu": "1000m",
                     "ram": "3Gi"
                 },
-
                 "command": "python main.py inputs.cdse_key inputs.cdse_secret"
             },
             "inputs": {
@@ -130,6 +133,10 @@
                 "L2A_B04": {
                     "type": "Data",
                     "glob": "B04.png"
+                },
+                "L2A_TCI": {
+                    "type": "Data",
+                    "glob": "TCI.png"
                 }
             }
         }
