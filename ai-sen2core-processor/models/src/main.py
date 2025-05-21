@@ -1,26 +1,27 @@
-import os
 import io
+import os
 import sys
-import random
-import numpy as np
-import cv2
-import pandas as pd
-import torch
-import matplotlib.pyplot as plt
-from PIL import Image
-from dotenv import load_dotenv
-import pystac_client
-from loguru import logger
+import time
 import warnings
+from functools import wraps
+
+import cv2
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import pystac_client
+import torch
+from dotenv import load_dotenv
+from loguru import logger
+from PIL import Image
 
 from auth.auth import S3Connector
-from utils.utils import extract_s3_path_from_url, load_config
-from utils.stac_client import get_product_content
 from model_zoo.models import define_model
+from utils.stac_client import get_product_content
 from utils.torch import load_model_weights
+from utils.utils import extract_s3_path_from_url, load_config
+
 warnings.filterwarnings('ignore')
-import time
-from functools import wraps
 
 # Global store for function durations
 function_durations = {}
