@@ -94,8 +94,9 @@ deltatwin run start_local -i inputs_file.json
 
 Below is an example of the Delta Twin output. The L1C product download, preprocessed, ingested by the model to generate the L2A product from the same band. The worflow should output the following band:  B02, B03 and B04.
 
-![Image Alt Text](assets/L2A_B02.png)
-
+![Image Alt Text](assets/asset_b02.png)
+![Image Alt Text](assets/asset_TCI.png)
+![Image Alt Text](assets/asset_benchmark_results.png)
 
 ## Repository Structure
 
@@ -109,7 +110,6 @@ The repository is structured as follows:
 │   ├── manifest.json
 │   ├── models
 │   │   └── src
-│   │       ├── auth
 │   │       │   └── auth.py
 │   │       ├── cfg
 │   │       │   ├── config.yaml
@@ -124,6 +124,10 @@ The repository is structured as follows:
 │   │       └── weight
 │   │           └── AiSen2Core_EfficientNet_b2.pth
 │   └── workflow.yml
+├── assets
+│   ├── asset_TCI.png
+│   ├── asset_b02.png
+│   └── asset_benchmark_results.png
 └── requirements.txt
 ```
 

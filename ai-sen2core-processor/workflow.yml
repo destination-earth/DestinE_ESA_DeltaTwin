@@ -1,11 +1,9 @@
 # List of nodes in the workflow
 nodes:
   - id: cdse_key
-    # ref must point to an existing path in manifest.json
-    # i.e. a specific resource, dependency, input, output, or model
     ref: inputs.cdse_key
   - id: cdse_secret
-    ref: inputs.cdse_secret  # (ex: resources.band_03, dependencies.band-extractor, inputs.name, outputs.roteted-image, models.band-compositor)
+    ref: inputs.cdse_secret
   - id: inference
     ref : models.ai-sen2core-processor
   - id: output_b02
@@ -14,6 +12,10 @@ nodes:
     ref : outputs.L2A_B03
   - id: output_b04
     ref : outputs.L2A_B04
+  - id: output_tci
+    ref : outputs.L2A_TCI
+  - id: output_tile_benchmark
+    ref: outputs.tile_benchmark
 
 # List of edges between nodes in the workflow
 edges:
@@ -45,3 +47,13 @@ edges:
       port: L2A_B04 # name of an output from the source node (ex: selectedBand, indexImage)
     to: # the destination node of the edge
       id: output_b04 # id of an existing node identifier from the list of the nodes above (⚠️ different from from.id)
+  - from:
+      id: inference
+      port: L2A_TCI
+    to:
+      id: output_tci
+  - from:
+      id: inference
+      port: tile_benchmark
+    to:
+      id: output_tile_benchmark
