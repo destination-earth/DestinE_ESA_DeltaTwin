@@ -125,7 +125,9 @@ The repository is structured as follows:
 │   │           └── AiSen2Core_EfficientNet_b2.pth
 │   └── workflow.yml
 ├── assets
-│   └── L2A_B02.png
+│   ├── asset_TCI.png
+│   ├── asset_b02.png
+│   └── asset_benchmark_results.png
 └── requirements.txt
 ```
 
