@@ -14,6 +14,8 @@ nodes:
     ref : outputs.L2A_B04
   - id: output_tci
     ref : outputs.L2A_TCI
+  - id: output_tile_benchmark
+    ref: outputs.tile_benchmark
 
 # List of edges between nodes in the workflow
 edges:
@@ -50,3 +52,8 @@ edges:
       port: L2A_TCI
     to:
       id: output_tci
+  - from:
+      id: inference
+      port: tile_benchmark
+    to:
+      id: output_tile_benchmark

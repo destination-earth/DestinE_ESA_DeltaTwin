@@ -41,6 +41,10 @@
         "L2A_TCI": {
             "type": "Data",
             "description": "L2A TCI"
+        },
+        "tile_benchmark": {
+            "type": "Data",
+            "description": "Tile generation benchmark"
         }
     },
     "models": {
@@ -137,6 +141,10 @@
                 "L2A_TCI": {
                     "type": "Data",
                     "glob": "TCI.png"
+                },
+                "tile_benchmark": {
+                    "type": "Data",
+                    "glob": "benchmark_results.png"
                 }
             }
         }

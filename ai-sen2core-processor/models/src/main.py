@@ -19,8 +19,27 @@ from utils.stac_client import get_product_content
 from model_zoo.models import define_model
 from utils.torch import load_model_weights
 warnings.filterwarnings('ignore')
+import time
+from functools import wraps
 
+# Global store for function durations
+function_durations = {}
 
+def benchmark(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        start_time = time.time()
+        result = func(*args, **kwargs)
+        duration = time.time() - start_time
+
+        # Store duration in global dictionary
+        function_durations[func.__name__] = function_durations.get(func.__name__, []) + [duration]
+
+        logger.info(f"[BENCHMARK] {func.__name__} took {duration:.4f} seconds")
+        return result
+    return wrapper
+
+@benchmark
 def initialize_env(key_id=sys.argv[1], secret_key=sys.argv[2]) -> dict:
     """Load environment variables."""
     try:
@@ -34,13 +53,12 @@ def initialize_env(key_id=sys.argv[1], secret_key=sys.argv[2]) -> dict:
         logger.error(f"Failed to load environment variables: {e}")
         return {}
 
-
 def remove_last_segment_rsplit(sentinel_id):
     # Split from the right side, max 1 split
     parts = sentinel_id.rsplit('_', 1)
     return parts[0]
 
-
+@benchmark
 def connect_to_s3(endpoint_url: str, access_key_id: str, secret_access_key: str) -> tuple:
     """Connect to S3 storage."""
     try:
@@ -56,8 +74,8 @@ def connect_to_s3(endpoint_url: str, access_key_id: str, secret_access_key: str)
         logger.error(f"Failed to connect to S3 storage: {e}")
         return None, None
 
-
-def fetch_sentinel_data(catalog, bbox: list, start_date: str, end_date: str, max_cloud_cover: int):
+@benchmark
+def data_query(catalog, bbox: list, start_date: str, end_date: str, max_cloud_cover: int):
     """
     Fetch both L1C and L2A products from CDSE STAC catalog and find matching pairs.
 
@@ -149,7 +167,7 @@ def fetch_sentinel_data(catalog, bbox: list, start_date: str, end_date: str, max
         logger.error(f"Error fetching Sentinel data: {e}")
         return None, None
 
-
+@benchmark
 def load_bands_from_s3(s3_client, bucket_name: str, item, bands: list, resize_shape: tuple = (1830, 1830), product_level: str ="L1C") -> np.ndarray:
     """Load bands from S3 storage."""
     try:
@@ -173,7 +191,6 @@ def load_bands_from_s3(s3_client, bucket_name: str, item, bands: list, resize_sh
         logger.error(f"Failed to load bands from S3 storage: {e}")
         return None
 
-
 def normalize(data_array: np.ndarray) -> tuple:
     """Normalize the data array."""
     try:
@@ -193,7 +210,7 @@ def normalize(data_array: np.ndarray) -> tuple:
         logger.error(f"Failed to normalize data array: {e}")
         return None, None
 
-
+@benchmark
 def preprocess(raw_data: np.ndarray, resize: int, device: torch.device):
     """Preprocess the raw data."""
     try:
@@ -207,7 +224,7 @@ def preprocess(raw_data: np.ndarray, resize: int, device: torch.device):
         logger.error(f"Failed to preprocess raw data: {e}")
         return None, None
 
-
+@benchmark
 def postprocess(x_tensor: torch.Tensor, pred_tensor: np.ndarray, valid_mask: np.ndarray) -> tuple:
     """Postprocess the prediction."""
     try:
@@ -224,7 +241,7 @@ def postprocess(x_tensor: torch.Tensor, pred_tensor: np.ndarray, valid_mask: np.
         logger.error(f"Failed to postprocess model output: {e}")
         return None, None
 
-
+@benchmark
 def load_model(model_cfg: dict, weights_path: str, device: torch.device) -> torch.nn.Module:
     """Load the model."""
     try:
@@ -242,7 +259,7 @@ def load_model(model_cfg: dict, weights_path: str, device: torch.device) -> torc
         logger.error(f"Failed to load model: {e}")
         return None
 
-
+@benchmark
 def predict(model: torch.nn.Module, x_tensor: torch.Tensor) -> np.ndarray:
     """Make a prediction."""
     try:
@@ -255,7 +272,7 @@ def predict(model: torch.nn.Module, x_tensor: torch.Tensor) -> np.ndarray:
         logger.error(f"Failed to generate L2A: {e}")
         return None
 
-
+@benchmark
 def generate_plot_band(x_np: np.ndarray, gt_np: np.ndarray, pred_np: np.ndarray, bands: list, cmap: str, output_dir: str) -> None:
     """
     Visualize the results with a simple histogram comparison for prediction vs reference.
@@ -293,7 +310,7 @@ def generate_plot_band(x_np: np.ndarray, gt_np: np.ndarray, pred_np: np.ndarray,
             band_pred = pred_np[:, :, idx]
 
             # Calculate the difference
-            diff_target_pred = np.abs(band_gt - band_pred)
+            diff_target_pred = (np.abs(band_gt - band_pred) / band_gt) * 100
 
             # Plot images
             im1 = ax_img1.imshow(band_x, cmap=cmap, vmin=0, vmax=1)
@@ -311,46 +328,40 @@ def generate_plot_band(x_np: np.ndarray, gt_np: np.ndarray, pred_np: np.ndarray,
             ax_img3.axis('off')
             plt.colorbar(im3, ax=ax_img3, fraction=0.046, pad=0.04)
 
-            im4 = ax_img4.imshow(diff_target_pred, cmap='plasma', vmin=0, vmax=diff_target_pred.max())
-            ax_img4.set_title(f"Abs Difference - {band}", fontsize=14)
+            im4 = ax_img4.imshow(diff_target_pred, cmap='plasma', vmin=0, vmax=100)
+            ax_img4.set_title(f"Relative Error [%] - {band}", fontsize=14)
             ax_img4.axis('off')
             plt.colorbar(im4, ax=ax_img4, fraction=0.046, pad=0.04)
 
             # Simple histogram comparison
             # Filter out zeros and NaN values
-            gt_data = band_gt[np.logical_and(band_gt > 0, np.isfinite(band_gt))].flatten()
-            pred_data = band_pred[np.logical_and(band_pred > 0, np.isfinite(band_pred))].flatten()
+            gt_data = band_gt[band_gt > 0].flatten()
+            pred_data = band_pred[band_pred > 0].flatten()
+            # Find common x-axis limits
+            min_val = min(gt_data.min(), pred_data.min())
+            max_val = max(np.percentile(gt_data, 98), np.percentile(pred_data, 98))
 
-            if len(gt_data) > 0 and len(pred_data) > 0:
-                # Find common x-axis limits
-                min_val = min(gt_data.min(), pred_data.min())
-                max_val = max(np.percentile(gt_data, 98), np.percentile(pred_data, 98))
+            # Create bins
+            bins = np.linspace(min_val, max_val, 100)
 
-                # Create bins
-                bins = np.linspace(min_val, max_val, 100)
+            # Plot histograms
+            ax_hist.hist(gt_data, bins=bins, alpha=0.5, color='green', label='Reference L2A')
+            ax_hist.hist(pred_data, bins=bins, alpha=0.5, color='red', label='Prediction L2A')
+            ax_hist.set_title(f"Histogram Comparison - Band {band}", fontsize=14)
+            ax_hist.set_xlabel("Pixel Value", fontsize=12)
+            ax_hist.set_ylabel("Frequency", fontsize=12)
+            ax_hist.legend(fontsize=12)
+            ax_hist.set_xlim(0,1)
 
-                # Plot histograms
-                ax_hist.hist(gt_data, bins=bins, alpha=0.5, color='green', label='Reference L2A')
-                ax_hist.hist(pred_data, bins=bins, alpha=0.5, color='red', label='Prediction L2A')
-                ax_hist.set_title(f"Histogram Comparison - Band {band}", fontsize=14)
-                ax_hist.set_xlabel("Pixel Value", fontsize=12)
-                ax_hist.set_ylabel("Frequency", fontsize=12)
-                ax_hist.legend(fontsize=12)
-                ax_hist.set_xlim(0,1)
+            # Add metrics
+            rmse = np.sqrt(np.mean((band_gt - band_pred)**2))
+            mae = np.mean(np.abs(band_gt - band_pred))
 
-                # Add metrics
-                rmse = np.sqrt(np.mean((band_gt - band_pred)**2))
-                mae = np.mean(np.abs(band_gt - band_pred))
-
-                # Add metrics as text to the plot
-                ax_hist.text(0.99, 0.95, f'RMSE: {rmse:.4f}\nMAE: {mae:.4f}',
-                         transform=ax_hist.transAxes, ha='right', va='top',
-                         bbox=dict(boxstyle='round', facecolor='white', alpha=0.7),
-                         fontsize=12)
-            else:
-                ax_hist.text(0.5, 0.5, "No valid data for histogram", ha='center', va='center',
-                          transform=ax_hist.transAxes, fontsize=14)
-
+            # Add metrics as text to the plot
+            ax_hist.text(0.99, 0.95, f'RMSE: {rmse:.4f}\nMAE: {mae:.4f}',
+                        transform=ax_hist.transAxes, ha='right', va='top',
+                        bbox=dict(boxstyle='round', facecolor='white', alpha=0.7),
+                        fontsize=12)
             # Save the figure
             fig.tight_layout(rect=[0, 0, 1, 0.96])  # Leave space for suptitle
             fig.savefig(f"{output_dir}/{band}.png", dpi=300, bbox_inches='tight')
@@ -362,8 +373,7 @@ def generate_plot_band(x_np: np.ndarray, gt_np: np.ndarray, pred_np: np.ndarray,
         import traceback
         logger.error(traceback.format_exc())
 
-
-
+@benchmark
 def generate_tci_plot(x_np: np.ndarray, gt_np: np.ndarray, pred_np: np.ndarray, bands: list, output_dir: str) -> None:
     """
     Generate True Color Image (RGB composite) plots for both input and predicted data.
@@ -398,17 +408,17 @@ def generate_tci_plot(x_np: np.ndarray, gt_np: np.ndarray, pred_np: np.ndarray, 
 
         # Plot input TCI
         axs[0].imshow(rgb_x)
-        axs[0].set_title(f"Input L1C - True Color {bands}", fontsize=16)
+        axs[0].set_title(f"Input L1C - True Color Index {bands}", fontsize=16)
         axs[0].axis('off')
 
         # Plot predicted TCI
         axs[1].imshow(rgb_pred)
-        axs[1].set_title(f"Predicted L2A - True Color {bands}", fontsize=16)
+        axs[1].set_title(f"Predicted L2A - True Color Index {bands}", fontsize=16)
         axs[1].axis('off')
 
         # Plot gt  TCI
         axs[2].imshow(rgb_pred)
-        axs[2].set_title(f"Reference L2A Sen2Core- True Color {bands}", fontsize=16)
+        axs[2].set_title(f"Reference L2A Sen2Core- True Color Index {bands}", fontsize=16)
         axs[2].axis('off')
         # Save figure
         fig.tight_layout()
@@ -418,6 +428,35 @@ def generate_tci_plot(x_np: np.ndarray, gt_np: np.ndarray, pred_np: np.ndarray, 
         logger.success("TCI RGB composite visualization generated")
     except Exception as e:
         logger.error(f"Failed to generate TCI RGB composite: {e}")
+
+
+
+def plot_benchmark_results(function_durations, output_dir):
+    # Convert durations from seconds to minutes
+    avg_durations = {k: sum(v) / len(v) / 60 for k, v in function_durations.items()}
+
+    # Avoid log scale issues
+    epsilon = 1e-6
+    avg_durations = {k: max(val, epsilon) for k, val in avg_durations.items()}
+
+    # Hardcoded Sen2Core processing time in minutes
+    sen2core_time_min = 35
+
+    plt.figure(figsize=(12, 6))
+    plt.bar(avg_durations.keys(), avg_durations.values(), color='skyblue')
+
+    plt.yscale('log')
+    plt.ylabel('Duration (minutes, log scale)')
+    plt.title('Tile Generation Benchmark (Log Scale)')
+    plt.xticks(rotation=45, ha='right')
+
+    # Add horizontal line for Sen2Core processing time
+    plt.axhline(y=sen2core_time_min, color='red', linestyle='--', label='Sen2Core processing time (35 min)')
+    plt.legend()
+
+    plt.tight_layout()
+    plt.savefig(f"{output_dir}/benchmark_results.png", dpi=300)
+    plt.close()
 
 
 def main() -> None:
@@ -447,7 +486,7 @@ def main() -> None:
     end_date = query_cfg["query"]["end_date"]
     max_cloud_cover = query_cfg["query"]["max_cloud_cover"]
 
-    l1c_item, l2a_item  = fetch_sentinel_data(catalog, bbox, start_date, end_date, max_cloud_cover)
+    l1c_item, l2a_item  = data_query(catalog, bbox, start_date, end_date, max_cloud_cover)
 
     l1c_raw_data = load_bands_from_s3(s3_client, bucket_name, l1c_item, bands)
     l2a_raw_data = load_bands_from_s3(s3_client, bucket_name, l2a_item, bands, product_level="L2A")
@@ -468,7 +507,15 @@ def main() -> None:
     # Visualization
     generate_plot_band(x_np=x_np, gt_np=gt_np, pred_np=pred_np, bands=bands, cmap="Grays_r", output_dir=dir_path)
     generate_tci_plot(x_np=x_np, gt_np=gt_np, pred_np=pred_np, bands=bands, output_dir=dir_path)
+
+
+    logger.info("Plot tile generation benchmark")
+
+    plot_benchmark_results(function_durations=function_durations, output_dir=dir_path)
+
     logger.success("Workflow completed")
+
+
 
 
 if __name__ == "__main__":
