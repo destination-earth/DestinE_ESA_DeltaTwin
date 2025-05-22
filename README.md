@@ -45,7 +45,7 @@ To run the processor locally, follow these steps:
 To run the processor, execute the following command:
 
 ```bash
-cd ai-sen2core-processor/models/src/
+cd ai-sen2cor-processor/models/src/
 python main.py your_cdse_key your_cdse_secret
 ```
 
@@ -53,7 +53,7 @@ python main.py your_cdse_key your_cdse_secret
 
 ### Set up CDSE Credentials
 
-To set up your CDSE credentials, edit the `ai-sen2core-processor/inputs_file.json` JSON file by adding your CDSE key and secret:
+To set up your CDSE credentials, edit the `ai-sen2cor-processor/inputs_file.json` JSON file by adding your CDSE key and secret:
 
 ```json
 {
@@ -87,7 +87,7 @@ deltatwin run start_local -i inputs_file.json
 2. **Publish the Component**:
 
    ```bash
-   deltatwin component publish -t AiSen2Core -v private 0.1
+   deltatwin component publish -t AiSen2Cor -v private 0.1
    ```
 
 ## Workflow Output Example
@@ -105,7 +105,7 @@ The repository is structured as follows:
 ```bash
 ├── LICENSE
 ├── README.md
-├── ai-sen2core-processor
+├── ai-sen2cor-processor
 │   ├── inputs_file.json
 │   ├── manifest.json
 │   ├── models
@@ -122,7 +122,7 @@ The repository is structured as follows:
 │   │       │   ├── torch.py
 │   │       │   └── utils.py
 │   │       └── weight
-│   │           └── AiSen2Core_EfficientNet_b2.pth
+│   │           └── AiSen2Cor_EfficientNet_b2.pth
 │   └── workflow.yml
 ├── assets
 │   ├── asset_TCI.png
