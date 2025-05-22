@@ -1,0 +1,152 @@
+{
+    "name": "ai-sen2cor-processor",
+    "description": "Prototype version of an Ai Sen2Core to generate Sentinel L2A product over Europe with and EfficientNet-b2 network",
+    "license": {
+        "name": "LGPLv3",
+        "url": "https://www.gnu.org/licenses/gpl-3.0.txt",
+        "description": "",
+        "copyrights": [
+            {
+                "years": [
+                    2025
+                ],
+                "company": "European Space Agency"
+            }
+        ]
+    },
+    "owner": "sebastien.tetaud",
+    "inputs": {
+        "cdse_key": {
+            "type": "string",
+            "description": "CDSE ACCESS_KEY_ID"
+        },
+        "cdse_secret": {
+            "type": "string",
+            "description": "CDSE SECRET ACCESS KEY"
+        }
+    },
+    "outputs": {
+        "L2A_B02": {
+            "type": "Data",
+            "description": "L2A B02"
+        },
+        "L2A_B03": {
+            "type": "Data",
+            "description": "L2A B03"
+        },
+        "L2A_B04": {
+            "type": "Data",
+            "description": "L2A B04"
+        },
+        "L2A_TCI": {
+            "type": "Data",
+            "description": "L2A TCI"
+        },
+        "tile_benchmark": {
+            "type": "Data",
+            "description": "Tile generation benchmark"
+        }
+    },
+    "models": {
+        "ai-sen2cor-processor": {
+            "path": "models/src",
+            "type": "python",
+            "parameters": {
+                "pythonVersion": "3.12.2",
+                "pipRequirements": [
+                    {
+                        "name": "Pillow",
+                        "version": "10.1.0"
+                    },
+                    {
+                        "name": "aiohttp",
+                        "version": "3.11.16"
+                    },
+                    {
+                        "name": "boto3",
+                        "version": "1.34.20"
+                    },
+                    {
+                        "name": "docstring-parser",
+                        "version": "0.16"
+                    },
+                    {
+                        "name": "dotenv",
+                        "version": "0.9.9"
+                    },
+                    {
+                        "name": "loguru",
+                        "version": "0.7.3"
+                    },
+                    {
+                        "name": "lxml",
+                        "version": "5.3.1"
+                    },
+                    {
+                        "name": "opencv-python-headless",
+                        "version": "4.11.0.86"
+                    },
+                    {
+                        "name": "pystac-client",
+                        "version": "0.8.6"
+                    },
+                    {
+                        "name": "torch",
+                        "version": "2.7"
+                    },
+                    {
+                        "name": "matplotlib",
+                        "version": "3.10.3"
+                    },
+                    {
+                        "name": "pandas",
+                        "version": "2.2.3"
+                    },
+                    {
+                        "name": "segmentation-models-pytorch",
+                        "version": "0.4.0"
+                    },
+                    {
+                        "name": "timm",
+                        "version": "1.0.15"
+                    }
+                ],
+                "hardwareRequirements": {
+                    "cpu": "1000m",
+                    "ram": "3Gi"
+                },
+                "command": "python main.py inputs.cdse_key inputs.cdse_secret"
+            },
+            "inputs": {
+                "cdse_key": {
+                    "type": "string"
+                },
+                "cdse_secret": {
+                    "type": "string"
+                }
+            },
+            "outputs": {
+                "L2A_B02": {
+                    "type": "Data",
+                    "glob": "B02.png"
+                },
+                "L2A_B03": {
+                    "type": "Data",
+                    "glob": "B03.png"
+                },
+                "L2A_B04": {
+                    "type": "Data",
+                    "glob": "B04.png"
+                },
+                "L2A_TCI": {
+                    "type": "Data",
+                    "glob": "TCI.png"
+                },
+                "tile_benchmark": {
+                    "type": "Data",
+                    "glob": "benchmark_results.png"
+                }
+            }
+        }
+    }
+}
