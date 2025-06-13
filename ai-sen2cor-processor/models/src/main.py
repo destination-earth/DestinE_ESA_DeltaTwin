@@ -509,7 +509,7 @@ def main() -> None:
 
     # Visualization
     generate_plot_band(x_np=x_np, gt_np=gt_np, pred_np=pred_np, bands=bands, cmap="Grays_r", output_dir=dir_path)
-    generate_tci_plot(x_np=x_np, gt_np=gt_np, pred_np=pred_np, bands=[::-1], output_dir=dir_path)
+    generate_tci_plot(x_np=x_np, gt_np=gt_np, pred_np=pred_np, bands=bands[::-1], output_dir=dir_path)
 
 
     logger.info("Plot tile generation benchmark")
