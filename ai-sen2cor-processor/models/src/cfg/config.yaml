@@ -10,7 +10,7 @@ ENDPOINTS:
   stac: https://stac.dataspace.copernicus.eu/v1/
   url: ttps://eodata.dataspace.copernicus.eu
 MODEL:
-  activation: sigmoid
+  activation: relu
   encoder_name: timm-efficientnet-b2
   encoder_weights: imagenet
   in_channel: 3

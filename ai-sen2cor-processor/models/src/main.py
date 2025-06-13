@@ -365,7 +365,7 @@ def generate_plot_band(x_np: np.ndarray, gt_np: np.ndarray, pred_np: np.ndarray,
                         fontsize=12)
             # Save the figure
             fig.tight_layout(rect=[0, 0, 1, 0.96])  # Leave space for suptitle
-            fig.savefig(f"{output_dir}/{band}.png", dpi=300, bbox_inches='tight')
+            fig.savefig(f"{output_dir}/{band}.svg", dpi=300, bbox_inches='tight')
             plt.close(fig)
 
         logger.success(f"Visualizations with histograms generated in {output_dir}")
@@ -412,18 +412,20 @@ def generate_tci_plot(x_np: np.ndarray, gt_np: np.ndarray, pred_np: np.ndarray, 
         axs[0].set_title(f"Input L1C - True Color Index {bands}", fontsize=16)
         axs[0].axis('off')
 
-        # Plot predicted TCI
-        axs[1].imshow(rgb_pred)
-        axs[1].set_title(f"Predicted L2A - True Color Index {bands}", fontsize=16)
-        axs[1].axis('off')
 
         # Plot gt  TCI
+        axs[1].imshow(rgb_pred)
+        axs[1].set_title(f"Reference L2A Sen2Cor- True Color Index {bands}", fontsize=16)
+        axs[1].axis('off')
+
+        # Plot predicted TCI
         axs[2].imshow(rgb_pred)
-        axs[2].set_title(f"Reference L2A Sen2Cor- True Color Index {bands}", fontsize=16)
+        axs[2].set_title(f"Predicted L2A - True Color Index {bands}", fontsize=16)
         axs[2].axis('off')
+
         # Save figure
         fig.tight_layout()
-        fig.savefig(f"{output_dir}/TCI.png", dpi=300, bbox_inches='tight')
+        fig.savefig(f"{output_dir}/TCI.svg", dpi=300, bbox_inches='tight')
         plt.close(fig)
 
         logger.success("TCI RGB composite visualization generated")
@@ -456,7 +458,7 @@ def plot_benchmark_results(function_durations, output_dir):
     plt.legend()
 
     plt.tight_layout()
-    plt.savefig(f"{output_dir}/benchmark_results.png", dpi=300)
+    plt.savefig(f"{output_dir}/benchmark_results.svg", dpi=300)
     plt.close()
 
 
@@ -515,7 +517,6 @@ def main() -> None:
     plot_benchmark_results(function_durations=function_durations, output_dir=dir_path)
 
     logger.success("Workflow completed")
-
 
 
 
