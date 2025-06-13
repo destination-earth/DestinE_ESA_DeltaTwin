@@ -399,7 +399,7 @@ def generate_tci_plot(x_np: np.ndarray, gt_np: np.ndarray, pred_np: np.ndarray, 
         if len(rgb_indices) != 3:
             logger.error("Could not find all required RGB bands")
             return
-
+        rgb_indices = rgb_indices[::-1]
         # Extract RGB bands
         rgb_x = x_np[:, :, rgb_indices].copy()  # Make a copy to avoid modifying the original data
         rgb_pred = pred_np[:, :, rgb_indices].copy()
@@ -509,7 +509,7 @@ def main() -> None:
 
     # Visualization
     generate_plot_band(x_np=x_np, gt_np=gt_np, pred_np=pred_np, bands=bands, cmap="Grays_r", output_dir=dir_path)
-    generate_tci_plot(x_np=x_np, gt_np=gt_np, pred_np=pred_np, bands=bands, output_dir=dir_path)
+    generate_tci_plot(x_np=x_np, gt_np=gt_np, pred_np=pred_np, bands=[::-1], output_dir=dir_path)
 
 
     logger.info("Plot tile generation benchmark")
