@@ -93,10 +93,9 @@ deltatwin run start_local -i inputs_file.json
 ## Workflow Output Example
 
 Below is an example of the Delta Twin output. The L1C product download, preprocessed, ingested by the model to generate the L2A product from the same band. The worflow should output the following band:  B02, B03 and B04.
-
-![Image Alt Text](assets/asset_b02.png)
-![Image Alt Text](assets/asset_TCI.png)
-![Image Alt Text](assets/asset_benchmark_results.png)
+![Image Alt Text](assets/TCI.svg)
+![Image Alt Text](assets/B02.svg)
+![Image Alt Text](assets/benchmark_results.svg)
 
 ## Repository Structure
 
