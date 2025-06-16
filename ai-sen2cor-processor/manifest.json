@@ -17,11 +17,11 @@
     "owner": "sebastien.tetaud",
     "inputs": {
         "cdse_key": {
-            "type": "string",
+            "type": "secret",
             "description": "CDSE ACCESS_KEY_ID"
         },
         "cdse_secret": {
-            "type": "string",
+            "type": "secret",
             "description": "CDSE SECRET ACCESS KEY"
         }
     },
@@ -115,7 +115,7 @@
                     "cpu": "1000m",
                     "ram": "3Gi"
                 },
-                "command": "python main.py inputs.cdse_key inputs.cdse_secret"
+                "command": "python main.py $(inputs.cdse_key) $(inputs.cdse_secret)"
             },
             "inputs": {
                 "cdse_key": {
@@ -128,23 +128,23 @@
             "outputs": {
                 "L2A_B02": {
                     "type": "Data",
-                    "glob": "B02.png"
+                    "glob": "B02.svg"
                 },
                 "L2A_B03": {
                     "type": "Data",
-                    "glob": "B03.png"
+                    "glob": "B03.svg"
                 },
                 "L2A_B04": {
                     "type": "Data",
-                    "glob": "B04.png"
+                    "glob": "B04.svg"
                 },
                 "L2A_TCI": {
                     "type": "Data",
-                    "glob": "TCI.png"
+                    "glob": "TCI.svg"
                 },
                 "tile_benchmark": {
                     "type": "Data",
-                    "glob": "benchmark_results.png"
+                    "glob": "benchmark_results.svg"
                 }
             }
         }

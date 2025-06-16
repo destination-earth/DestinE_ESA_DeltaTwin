@@ -366,6 +366,7 @@ def generate_plot_band(x_np: np.ndarray, gt_np: np.ndarray, pred_np: np.ndarray,
             # Save the figure
             fig.tight_layout(rect=[0, 0, 1, 0.96])  # Leave space for suptitle
             fig.savefig(f"{output_dir}/{band}.svg", dpi=300, bbox_inches='tight')
+            logger.info(f"{output_dir}/{band}.svg")
             plt.close(fig)
 
         logger.success(f"Visualizations with histograms generated in {output_dir}")
@@ -425,7 +426,7 @@ def generate_tci_plot(x_np: np.ndarray, gt_np: np.ndarray, pred_np: np.ndarray, 
 
         # Save figure
         fig.tight_layout()
-        fig.savefig(f"{output_dir}/TCI.svg", dpi=300, bbox_inches='tight')
+        fig.savefig(f"./TCI.svg", dpi=300, bbox_inches='tight')
         plt.close(fig)
 
         logger.success("TCI RGB composite visualization generated")
@@ -458,7 +459,7 @@ def plot_benchmark_results(function_durations, output_dir):
     plt.legend()
 
     plt.tight_layout()
-    plt.savefig(f"{output_dir}/benchmark_results.svg", dpi=300)
+    plt.savefig(f"./benchmark_results.svg", dpi=300)
     plt.close()
 
 
@@ -509,12 +510,13 @@ def main() -> None:
 
     # Visualization
     generate_plot_band(x_np=x_np, gt_np=gt_np, pred_np=pred_np, bands=bands, cmap="Grays_r", output_dir=dir_path)
-    generate_tci_plot(x_np=x_np, gt_np=gt_np, pred_np=pred_np, bands=bands[::-1], output_dir=dir_path)
+    generate_tci_plot(x_np=x_np, gt_np=gt_np, pred_np=pred_np, bands=bands[::-1], output_dir=".")
 
 
     logger.info("Plot tile generation benchmark")
 
     plot_benchmark_results(function_durations=function_durations, output_dir=dir_path)
+
 
     logger.success("Workflow completed")
 
