@@ -17,11 +17,11 @@
     "owner": "sebastien.tetaud",
     "inputs": {
         "cdse_key": {
-            "type": "string",
+            "type": "secret",
             "description": "CDSE ACCESS_KEY_ID"
         },
         "cdse_secret": {
-            "type": "string",
+            "type": "secret",
             "description": "CDSE SECRET ACCESS KEY"
         }
     },
