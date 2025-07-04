@@ -1,6 +1,6 @@
 {
     "name": "ai-sen2cor-processor",
-    "description": "Prototype version of an Ai Sen2Core to generate Sentinel L2A product over Europe with and EfficientNet-b2 network",
+    "description": "Prototype version of an Ai Sen2Cor to generate Sentinel L2A product over Europe with an EfficientNet-b2 network",
     "license": {
         "name": "LGPLv3",
         "url": "https://www.gnu.org/licenses/gpl-3.0.txt",
@@ -17,11 +17,11 @@
     "owner": "sebastien.tetaud",
     "inputs": {
         "cdse_key": {
-            "type": "secret",
+            "type": "string",
             "description": "CDSE ACCESS_KEY_ID"
         },
         "cdse_secret": {
-            "type": "secret",
+            "type": "string",
             "description": "CDSE SECRET ACCESS KEY"
         }
     },
