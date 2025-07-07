@@ -112,8 +112,8 @@
                     }
                 ],
                 "hardwareRequirements": {
-                    "cpu": "1000m",
-                    "ram": "3Gi"
+                    "cpu": "4000m",
+                    "ram": "4Gi"
                 },
                 "command": "python main.py $(inputs.cdse_key) $(inputs.cdse_secret)"
             },
