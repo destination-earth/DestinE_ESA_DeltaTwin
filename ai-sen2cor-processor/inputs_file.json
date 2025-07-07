@@ -1,10 +1,10 @@
 {
     "cdse_key": {
-      "type": "string",
-      "value": ""
+      "type": "secret",
+      "secret_value": ""
     },
     "cdse_secret": {
-      "type": "string",
-      "value": ""
+      "type": "secret",
+      "secret_value": ""
     }
   }
