@@ -30,7 +30,7 @@ To run the processor locally, follow these steps:
 2. **Create and Activate a Conda Environment**:
 
    ```bash
-   conda create -n ai_processor python==3.12.2
+   conda create -n ai_processor python==3.12
    conda activate ai_processor
    ```
 
@@ -39,6 +39,8 @@ To run the processor locally, follow these steps:
    ```bash
    pip install -r requirements.txt
    ```
+
+   This will install all required dependencies including DeltaTwin platform packages (delta-core, deltatwin-cli), deep learning frameworks (PyTorch, segmentation-models-pytorch), and geospatial tools (pystac-client, boto3).
 
 ### Running the Processor
 
@@ -81,7 +83,7 @@ deltatwin run start_local -i inputs_file.json
 1. **Login to DeltaTwin**:
 
    ```bash
-   deltatwin login
+   deltatwin login username password --api https://api.deltatwin.destine.eu/
    ```
 
 2. **Publish the Component**:
