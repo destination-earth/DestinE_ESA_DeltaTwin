@@ -40,6 +40,8 @@ To run the processor locally, follow these steps:
    pip install -r requirements.txt
    ```
 
+   This will install all required dependencies including DeltaTwin platform packages (delta-core, deltatwin-cli), deep learning frameworks (PyTorch, segmentation-models-pytorch), and geospatial tools (pystac-client, boto3).
+
 ### Running the Processor
 
 To run the processor, execute the following command:
