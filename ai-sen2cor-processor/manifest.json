@@ -52,7 +52,7 @@
             "path": "models/src",
             "type": "python",
             "parameters": {
-                "pythonVersion": "3.12.2",
+                "pythonVersion": "3.12",
                 "pipRequirements": [
                     {
                         "name": "Pillow",

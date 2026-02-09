@@ -30,7 +30,7 @@ To run the processor locally, follow these steps:
 2. **Create and Activate a Conda Environment**:
 
    ```bash
-   conda create -n ai_processor python==3.12.2
+   conda create -n ai_processor python==3.12
    conda activate ai_processor
    ```
 
@@ -81,7 +81,7 @@ deltatwin run start_local -i inputs_file.json
 1. **Login to DeltaTwin**:
 
    ```bash
-   deltatwin login username password --api https://api.deltatwin.destine.eu/v2.0
+   deltatwin login username password --api https://api.deltatwin.destine.eu/
    ```
 
 2. **Publish the Component**:
