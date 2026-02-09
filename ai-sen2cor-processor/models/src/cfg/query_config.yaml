@@ -11,13 +11,13 @@ bands:
 # Query Configuration
 query:
   bbox:
-    - 3.2833
-    - 45.3833
+    - 3.28
+    - 45.38
     - 11.2
-    - 50.1833
+    - 50.18
 
-  start_date: '2024-07-01'
-  end_date: '2024-08-15'
+  start_date: '2026-01-01'
+  end_date: '2026-01-20'
 
   max_items: 1000
   max_cloud_cover: 30

@@ -90,25 +90,34 @@ def data_query(catalog, bbox: list, start_date: str, end_date: str, max_cloud_co
     Returns:
         tuple: (matched L1C item, matched L2A item)
     """
+
+    date_query = f"{str(start_date)}/{str(end_date)}"
+
+    logger.info(f"Searching for products in bbox {bbox} from {start_date} to {end_date} with cloud cover < {max_cloud_cover}%")
     try:
         # Search for L1C products
         logger.info(f"Searching for L1C products from {start_date} to {end_date} in bbox {bbox}")
         l1c_items = catalog.search(
-            collections=['sentinel-2-l1c'],
-            bbox=bbox,
-            datetime=f"{start_date}/{end_date}",
-            max_items=1000
-        ).item_collection()
+        collections=["sentinel-2-l1c"],
+        bbox=bbox,  # [min_lon, min_lat, max_lon, max_lat]
+        datetime=date_query,
+        # datetime="2026-01-01/2026-01-20",
+        query={
+            "eo:cloud_cover": {"lt": 30}
+        },
+        limit=50).item_collection()
 
         # Search for L2A products
         logger.info(f"Searching for L2A products from {start_date} to {end_date} in bbox {bbox}")
         l2a_items = catalog.search(
-            collections=['sentinel-2-l2a'],
-            bbox=bbox,
-            datetime=f"{start_date}/{end_date}",
-            query={"eo:cloud_cover": {"lt": max_cloud_cover}},
-            max_items=1000,
-        ).item_collection()
+        collections=["sentinel-2-l2a"],
+        bbox=bbox,  # [min_lon, min_lat, max_lon, max_lat]
+        datetime=date_query,
+        # datetime=f"2026-01-01/2026-01-20",
+        query={
+            "eo:cloud_cover": {"lt": 30}
+        },
+        limit=50).item_collection()
 
         # Filter L2A items to remove those with high nodata percentage
         l2a_items = [item for item in l2a_items if item.properties.get("statistics", {}).get('nodata', 100) < 5]

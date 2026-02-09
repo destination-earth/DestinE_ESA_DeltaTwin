@@ -81,7 +81,7 @@ deltatwin run start_local -i inputs_file.json
 1. **Login to DeltaTwin**:
 
    ```bash
-   deltatwin login
+   deltatwin login username password --api https://api.deltatwin.destine.eu/v2.0
    ```
 
 2. **Publish the Component**:
