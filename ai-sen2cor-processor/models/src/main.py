@@ -506,6 +506,11 @@ def main() -> None:
 
     # Load model
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    logger.info(f"Cuda is available: {torch.cuda.is_available()}")
+    logger.info(f"Device: {device}")
+    if torch.cuda.is_available():
+        logger.info(f"GPU: {torch.cuda.get_device_name(device=device)}")
+
     model = load_model(model_cfg["MODEL"], model_path, device)
 
     # Inference
