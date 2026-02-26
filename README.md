@@ -60,17 +60,68 @@ To set up your CDSE credentials, edit the `ai-sen2cor-processor/inputs_file.json
 ```json
 {
   "cdse_key": {
-    "type": "string",
+    "type": "secret",
     "value": "your_cdse_key"
   },
   "cdse_secret": {
-    "type": "string",
+    "type": "secret",
     "value": "your_cdse_secret"
   }
 }
 ```
 
 ### Test the Delta Twin Locally
+
+#### GPU Prerequisites
+
+Install libraries:
+
+```bash
+sudo apt-get install --no-install-recommends -y ca-certificates curl gcc gnupg2 software-properties-common wget
+```
+
+Download and install NVIDIA Cuda Toolkit. Please adapt following commands according the target system (<https://developer.nvidia.com/cuda-downloads>).
+
+```bash
+wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/cuda-keyring_1.1-1_all.deb
+sudo dpkg -i cuda-keyring_1.1-1_all.deb
+sudo apt-get update
+sudo apt-get -y install cuda-toolkit-13-1
+```
+
+Install graphics-driver according your cuda version. See ([details](https://docs.nvidia.com/deploy/cuda-compatibility/forward-compatibility.html#id1))
+
+```bash
+sudo add-apt-repository ppa:graphics-drivers/ppa
+sudo apt update
+sudo apt upgrade
+sudo apt-get install -y nvidia-driver-580
+```
+
+Install NVIDIA Container Toolkit (<https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html>)
+
+```bash
+curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg \
+  && curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list | \
+    sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | \
+    sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
+sudo apt-get update
+export NVIDIA_CONTAINER_TOOLKIT_VERSION=1.18.2-1
+sudo apt-get install -y \
+   nvidia-container-toolkit=${NVIDIA_CONTAINER_TOOLKIT_VERSION} \
+   nvidia-container-toolkit-base=${NVIDIA_CONTAINER_TOOLKIT_VERSION} \
+   libnvidia-container-tools=${NVIDIA_CONTAINER_TOOLKIT_VERSION} \
+   libnvidia-container1=${NVIDIA_CONTAINER_TOOLKIT_VERSION}
+```
+
+Configure Docker
+
+```bash
+sudo nvidia-ctk runtime configure --runtime=docker
+sudo systemctl restart docker
+```
+
+#### DeltaTwin local execution
 
 To test the Delta Twin locally, run the following command:
 

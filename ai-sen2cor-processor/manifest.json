@@ -50,8 +50,10 @@
     "models": {
         "ai-sen2cor-processor": {
             "path": "models/src",
-            "type": "python",
+            "type": "cuda-python",
             "parameters": {
+                "cudaVersion": "13.0.2",
+                "cudaEnvironment": "runtime-ubuntu22.04",
                 "pythonVersion": "3.12",
                 "pipRequirements": [
                     {
@@ -113,16 +115,17 @@
                 ],
                 "hardwareRequirements": {
                     "cpu": "4000m",
-                    "ram": "4Gi"
+                    "ram": "4Gi",
+                    "gpu": true
                 },
                 "command": "python main.py $(inputs.cdse_key) $(inputs.cdse_secret)"
             },
             "inputs": {
                 "cdse_key": {
-                    "type": "string"
+                    "type": "secret"
                 },
                 "cdse_secret": {
-                    "type": "string"
+                    "type": "secret"
                 }
             },
             "outputs": {
